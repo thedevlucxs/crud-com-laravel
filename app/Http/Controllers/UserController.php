@@ -4,29 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\UserService;
 
 class UserController extends Controller
 {
-    public readonly User $user;
-    public function __construct()
+    protected readonly UserService $userService;
+
+    public function __construct(UserService $userService)
     {
-        $this->user = new User();
+        $this->userService = $userService;
     }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $users = $this->user->all();
+        $users = $this->userService->getAllUsers();
         return view('users', ['users' => $users]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('user_create');
     }
 
     /**
@@ -34,12 +28,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $created = $this->user->create([
-            'firstName' => $request->input('firstName'),
-            'lastName' => $request->input('lastName'),
-            'email' => $request->email,
-            'password' => password_hash($request->input('password'), \PASSWORD_DEFAULT),
-        ]);
+        $userData = $request->only(['firstName', 'lastName', 'email', 'password']);
+        $created = $this->userService->createUser($userData);
         if (!$created) {
             return redirect()->back()->with('message', 'Error created');
         }
@@ -48,28 +38,12 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(user $user)
-    {
-        return view('user_show', ['user' => $user]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        return view('user_edit', ['user' => $user]);
-
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
-        $updated = $this->user->where('id', $id)->update($request->except(['_token', '_method']));
+        $data = $request->except(['_token', '_method']);
+        $updated = $this->userService->updateUser($id, $data);
         if ($updated) {
             return redirect()->route('users.index');
         }
@@ -82,8 +56,35 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->user->where('id', $id)->delete();
+        $this->userService ->deleteUser($id);
+        return redirect()->route('users.index');
+    }
 
-        return redirect()->route(route: 'users.index');
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('user_create');
+    }
+
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(user $user)
+    {
+        $user = $this->userService->findUserById($user->id);
+        return view('user_show', ['user' => $user]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(User $user)
+    {
+        $user = $this->userService->findUserById($user->id);
+        return view('user_edit', ['user' => $user]);
+
     }
 }

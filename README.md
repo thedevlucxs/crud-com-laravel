@@ -34,8 +34,8 @@ Siga os passos abaixo para rodar o projeto em seu ambiente local.
 
 -   **Clone o repositório:**
 -   ```bash
-    git clone https://[URL_DO_SEU_REPOSITORIO_GIT] crud-com-laravel-
-    cd crud-com-laravel-
+    git clone https://github.com/thedevlucxs/crud-com-laravel crud-com-laravel
+    cd crud-com-laravel
     ```
 -   **Instale as dependências do Composer:** composer install
 -   **Configure o arquivo de ambiente:** composer create-project laravel/laravel crud-com-laravel
