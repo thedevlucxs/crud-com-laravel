@@ -38,4 +38,11 @@ class LoginController extends Controller
             'token_type' => 'Bearer',
         ]);
     }
+    public function logout(Request $request)
+    {
+        // Revoga o token que foi usado para autenticar a requisição atual
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logout realizado com sucesso']);
+    }
 }

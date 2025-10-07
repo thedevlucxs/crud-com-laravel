@@ -18,6 +18,9 @@ Route::get('/posts', [PostController::class, 'index']);
 
 // Rotas Protegidas (precisa de token para acessar)
 Route::middleware('auth:sanctum')->group(function () {
+
+    //Logout
+    Route::post('/logout', [LoginController::class, 'logout']);
     // Posts
     Route::post('/posts', [PostController::class, 'store']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
