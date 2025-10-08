@@ -35,9 +35,8 @@ function App() {
       const response = await api.post("/login", {
         email: email,
         password: password,
-        device_name: "react-app", // CORRIGIDO: Erro de digitação "reat-app"
+        device_name: "react-app",
       });
-      // CORREÇÃO CRÍTICA: Esta linha é a mais importante.
       // Ela guarda o token no estado, o que faz a interface mudar para a área logada.
       setToken(response.data.access_token);
     } catch (err) {
@@ -68,6 +67,20 @@ function App() {
     }
   };
 
+  const handleDeletePost = async (postId) => {
+    setError("");
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+    try {
+      await api.delete(`/posts/${postId}`);
+      setPosts(posts.filter((post) => post.id !== postId));
+    } catch (err) {
+      setError("Failed to delete post.");
+      console.error("Delete post error:", err);
+    }
+  };
+
   return (
     <div className="app-container">
       <h1>Blog Frontend (React)</h1>
@@ -78,7 +91,6 @@ function App() {
           <h2>Login</h2>
           <div className="form-group">
             <label>Email: </label>
-            {/* CORRIGIDO: Faltava o sinal de '=' no onChange */}
             <input
               type="email"
               value={email}
@@ -124,11 +136,20 @@ function App() {
         <h2>Posts</h2>
         {posts.length > 0 ? (
           <ul className="posts-list">
-            {/* CORRIGIDO: A função .map() precisa de estar dentro de {} para ser executada em JSX */}
             {posts.map((post) => (
               <li key={post.id} className="post-item">
                 <h3>{post.title}</h3>
                 <p>{post.content}</p>
+                {token && (
+                  <div>
+                    <button
+                      className="button-danger"
+                      onClick={() => handleDeletePost(post.id)}
+                    >
+                      Apagar
+                    </button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
