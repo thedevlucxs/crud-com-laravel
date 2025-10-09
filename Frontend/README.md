@@ -1,16 +1,51 @@
-# React + Vite
+# Frontend em React para Blog com Laravel
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este diretório contém a aplicação frontend, uma **Single Page Application (SPA)** construída com **React** e **Vite**. O objetivo principal é educacional, focado em demonstrar como construir uma interface de usuário que consome uma API RESTful externa para realizar operações de CRUD.
 
-Currently, two official plugins are available:
+Ela consome a API fornecida pelo backend em Laravel para oferecer uma interface de usuário interativa e dinâmica para o sistema de blog.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Funcionalidades
 
-## React Compiler
+- Interface para login e logout de usuários.
+- Visualização de lista de posts.
+- Visualização detalhada de um post com seus respectivos comentários.
+- Formulários para criação e edição de posts.
+- Funcionalidade para deletar posts.
+- Formulário para adicionar novos comentários.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tecnologias Utilizadas
 
-## Expanding the ESLint configuration
+- **Framework**: React 19
+- **Build Tool**: Vite
+- **Requisições HTTP**: Axios
+- **Linguagem**: JavaScript (JSX)
+- **Estilização**: CSS puro
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Pré-requisitos
+
+- [Node.js e NPM](https://nodejs.org/) (versão LTS recomendada)
+- O **servidor do backend (Laravel)** deve estar em execução para que o frontend possa consumir a API.
+
+## Instalação e Execução
+
+1.  **A partir da raiz do projeto, navegue até a pasta do frontend:**
+
+    ```bash
+    cd Frontend
+    ```
+
+2.  **Instale as dependências do NPM:**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Inicie o servidor de desenvolvimento do Vite:**
+    ```bash
+    npm run dev
+    ```
+    A aplicação frontend estará disponível por padrão em `http://localhost:5173`.
+
+## Conexão com a API
+
+A aplicação está configurada para se comunicar com a API do Laravel no endereço `http://127.0.0.1:8000/api`. Caso o seu backend esteja rodando em uma porta diferente, você pode alterar a `baseURL` no arquivo `src/App.jsx`.

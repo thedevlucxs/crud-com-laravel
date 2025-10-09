@@ -25,14 +25,16 @@ function App() {
 
   const [selectedPost, setSelectedPost] = useState(null);
 
+  const [newComment, setNewComment] = useState("");
+
   useEffect(() => {
-    // 1. Criamos um AbortController para este "efeito"
+    //Criamos um AbortController para este "efeito"
     const controller = new AbortController();
 
     const fetchData = async (authToken) => {
       api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
       try {
-        // 2. Passamos o "sinal" do controller para cada pedido axios
+        //Passamos o "sinal" do controller para cada pedido axios
         const userResponse = await api.get("/user", {
           signal: controller.signal,
         });
@@ -44,11 +46,11 @@ function App() {
         setPosts(postsResponse.data);
       } catch (err) {
         // Quando o pedido é cancelado, o axios lança um erro.
-        // Verificamos se o erro foi de cancelamento e, se for, ignoramo-lo.
+        // Verificamos se o erro foi de cancelamento e, se for, ignora.
         if (err.name === "CanceledError") {
           console.log("Pedido cancelado com sucesso.");
         } else {
-          // Se for outro tipo de erro, tratamo-lo
+          // Se for outro tipo de erro, trata.
           console.error("Falha ao buscar dados:", err);
           setToken(null);
         }
@@ -144,6 +146,38 @@ function App() {
     }
   };
 
+  const handleCreateComment = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!authUser || !selectedPost) {
+      setError("You must be logged in to comment.");
+      return;
+    }
+    try {
+      const response = await api.post(`/comments`, {
+        comment: newComment,
+        user_id: authUser.id,
+        post_id: selectedPost.id,
+      });
+
+      const newCommentWithUser = {
+        ...response.data,
+        user: {
+          firstName: authUser.firstName,
+          lastName: authUser.lastName,
+        },
+      };
+      setSelectedPost({
+        ...selectedPost,
+        comments: [...(selectedPost.comments || []), newCommentWithUser],
+      });
+      setNewComment("");
+    } catch (err) {
+      setError("Failed to create comment.");
+      console.error("Create comment error:", err);
+    }
+  };
+
   const handleEditPost = (post) => {
     setEditingPost(post);
     setSelectedPost(null);
@@ -184,12 +218,9 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>Blog Frontend (React)</h1>
+      <h1>Blog com React e Laravel</h1>
       <hr />
 
-      {/* A estrutura começa aqui. Ou mostra os detalhes, ou mostra a página principal.
-        Não há mais nada a seguir a isto.
-      */}
       {selectedPost ? (
         // SE um post estiver selecionado, MOSTRA SÓ ISTO
         <div className="post-detail-view">
@@ -234,6 +265,25 @@ function App() {
                 </ul>
               ) : (
                 <p>Ainda não há comentários para este post.</p>
+              )}
+
+              {/* Formulário para adicionar novo comentário */}
+              {token && (
+                <form
+                  onSubmit={handleCreateComment}
+                  style={{ marginTop: "20px" }}
+                >
+                  <div className="form-group">
+                    <textarea
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Escreva seu comentário..."
+                      required
+                      style={{ width: "100%", minHeight: "80px" }}
+                    />
+                  </div>
+                  <button type="submit">Comentar</button>
+                </form>
               )}
             </div>
           </div>
@@ -362,7 +412,7 @@ function App() {
                       <button onClick={() => handleSelectPost(post.id)}>
                         Ver detalhes
                       </button>
-                      {token && (
+                      {token && authUser && post.user_id === authUser.id && (
                         <div style={{ marginTop: "10px" }}>
                           <button
                             className="button-danger"
