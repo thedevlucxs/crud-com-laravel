@@ -26,30 +26,51 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   useEffect(() => {
-    // Função para buscar dados protegidos
+    // 1. Criamos um AbortController para este "efeito"
+    const controller = new AbortController();
+
     const fetchData = async (authToken) => {
       api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
       try {
-        const userResponse = await api.get("/user");
-        setAuthUser(userResponse.data); // <-- Busca o usuário
-        fetchPosts(); // <-- Busca os posts
+        // 2. Passamos o "sinal" do controller para cada pedido axios
+        const userResponse = await api.get("/user", {
+          signal: controller.signal,
+        });
+        const postsResponse = await api.get("/posts", {
+          signal: controller.signal,
+        });
+
+        setAuthUser(userResponse.data);
+        setPosts(postsResponse.data);
       } catch (err) {
-        console.error("Failed to fetch user data:", err);
-        setToken(null); // Limpa o token se for inválido
+        // Quando o pedido é cancelado, o axios lança um erro.
+        // Verificamos se o erro foi de cancelamento e, se for, ignoramo-lo.
+        if (err.name === "CanceledError") {
+          console.log("Pedido cancelado com sucesso.");
+        } else {
+          // Se for outro tipo de erro, tratamo-lo
+          console.error("Falha ao buscar dados:", err);
+          setToken(null);
+        }
       }
     };
 
     if (token) {
       localStorage.setItem("token", token);
-      fetchData(token); // <-- Chama a função para buscar os dados
+      fetchData(token);
     } else {
-      // Limpa tudo se não houver token
       localStorage.removeItem("token");
       delete api.defaults.headers.common["Authorization"];
       setAuthUser(null);
       setPosts([]);
     }
-  }, [token]); // <-- Executa sempre que o token mudar
+
+    // 3. A função de limpeza agora chama o método abort()
+    return () => {
+      console.log("Limpeza: abortando pedidos pendentes.");
+      controller.abort();
+    };
+  }, [token]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -165,321 +186,205 @@ function App() {
     <div className="app-container">
       <h1>Blog Frontend (React)</h1>
       <hr />
-      <div className="post-detail-view">
-        {selectedPost ? (
-          // SE um post estiver selecionado, MOSTRA SÓ ISTO
-          <div className="post-detail-view">
-            <div className="card">
-              <div className="post-detail-header">
-                <button
-                  onClick={() => setSelectedPost(null)}
-                  className="button-secondary"
-                >
-                  &larr; Voltar para todos os posts
+
+      {/* A estrutura começa aqui. Ou mostra os detalhes, ou mostra a página principal.
+        Não há mais nada a seguir a isto.
+      */}
+      {selectedPost ? (
+        // SE um post estiver selecionado, MOSTRA SÓ ISTO
+        <div className="post-detail-view">
+          <div className="card">
+            <div className="post-detail-header">
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="button-secondary"
+              >
+                &larr; Voltar para todos os posts
+              </button>
+
+              {token && authUser && selectedPost.user_id === authUser.id && (
+                <button onClick={() => handleEditPost(selectedPost)}>
+                  Editar
                 </button>
+              )}
+            </div>
 
-                {token && authUser && selectedPost.user_id === authUser.id && (
-                  <button onClick={() => handleEditPost(selectedPost)}>
-                    Editar
-                  </button>
-                )}
-              </div>
+            <div className="post-item post-detail-content">
+              <h2>{selectedPost.title}</h2>
+              <p>
+                <strong>Autor:</strong> {selectedPost.user.firstName}{" "}
+                {selectedPost.user.lastName}
+              </p>
+              <hr />
+              <p>{selectedPost.content}</p>
+            </div>
 
-              <div className="post-item post-detail-content">
-                <h2>{selectedPost.title}</h2>
-                <p>
-                  <strong>Autor:</strong> {selectedPost.user.firstName}{" "}
-                  {selectedPost.user.lastName}
-                </p>
-                <hr />
-                <p>{selectedPost.content}</p>
-              </div>
+            <div className="comments-section">
+              <h3>Comentários</h3>
+              {selectedPost.comments && selectedPost.comments.length > 0 ? (
+                <ul className="comments-list">
+                  {selectedPost.comments.map((comment) => (
+                    <li key={comment.id} className="comment-item">
+                      <p>
+                        <strong>{comment.user.firstName}:</strong>{" "}
+                        {comment.comment}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Ainda não há comentários para este post.</p>
+              )}
             </div>
           </div>
-        ) : (
-          // SENÃO (se nenhum post estiver selecionado), MOSTRA O RESTO DA PÁGINA
-          <>
-            {!token ? (
-              <form onSubmit={handleLogin} className="card">
-                <h2>Login</h2>
-                <div className="form-group">
-                  <label>Email: </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="lucas@gmail.com"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Password: </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="123456"
-                  />
-                </div>
-                <button type="submit">Entrar</button>
-              </form>
-            ) : (
-              <div className="card">
-                <p>
-                  <strong>Login efetuado com sucesso!</strong>
-                </p>
-                <button type="button" onClick={fetchPosts}>
-                  Buscar Posts
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="button-danger"
-                >
-                  Sair (Logout)
-                </button>
-              </div>
-            )}
-
-            {error && <p className="error-message">{error}</p>}
-
-            {token && (
-              <>
-                <hr />
-                {editingPost ? (
-                  <form onSubmit={handleUpdatePost} className="card">
-                    <h2>Editar Post</h2>
-                    <div className="form-group">
-                      <label>Título:</label>
-                      <input
-                        type="text"
-                        value={editingPost.title}
-                        onChange={(e) =>
-                          setEditingPost({
-                            ...editingPost,
-                            title: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Conteúdo:</label>
-                      <textarea
-                        value={editingPost.content}
-                        onChange={(e) =>
-                          setEditingPost({
-                            ...editingPost,
-                            content: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <button type="submit">Atualizar Post</button>
-                    <button
-                      type="button"
-                      className="button-secondary"
-                      onClick={() => setEditingPost(null)}
-                    >
-                      Cancelar
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleCreatePost} className="card">
-                    <h2>Criar Novo Post</h2>
-                    <div className="form-group">
-                      <label>Título:</label>
-                      <input
-                        type="text"
-                        value={newPostTitle}
-                        onChange={(e) => setNewPostTitle(e.target.value)}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Conteúdo:</label>
-                      <textarea
-                        value={newPostContent}
-                        onChange={(e) => setNewPostContent(e.target.value)}
-                      />
-                    </div>
-                    <button type="submit">Criar Post</button>
-                  </form>
-                )}
-              </>
-            )}
-
-            <div className="posts-container">
-              <>
-                <h2>Posts</h2>
-                {posts.length > 0 ? (
-                  <ul className="posts-list">
-                    {posts.map((post) => (
-                      <li key={post.id} className="post-item">
-                        <h3>{post.title}</h3>
-                        <p>{post.content}</p>
-                        <button onClick={() => handleSelectPost(post.id)}>
-                          Ver detalhes
-                        </button>
-                        {token && (
-                          <div style={{ marginTop: "10px" }}>
-                            <button
-                              className="button-danger"
-                              onClick={() => handleDeletePost(post.id)}
-                            >
-                              Apagar
-                            </button>
-                          </div>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>
-                    Nenhum post disponível. Faça o login e clique em "Buscar
-                    Posts".
-                  </p>
-                )}
-              </>
-            </div>
-          </>
-        )}
-      </div>
-      );
-      {!token ? (
-        <form onSubmit={handleLogin} className="card">
-          <h2>Login</h2>
-          <div className="form-group">
-            <label>Email: </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="lucas@gmail.com"
-            />
-          </div>
-          <div className="form-group">
-            <label>Password: </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="123456"
-            />
-          </div>
-          <button type="submit">Entrar</button>
-        </form>
-      ) : (
-        <div className="card">
-          <p>
-            <strong>Login efetuado com sucesso!</strong>
-          </p>
-          <button type="button" onClick={fetchPosts}>
-            Buscar Posts
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="button-danger"
-          >
-            Sair (Logout)
-          </button>
         </div>
-      )}
-      {error && <p className="error-message">{error}</p>}
-      {token && (
+      ) : (
+        // SENÃO (se nenhum post estiver selecionado), MOSTRA O RESTO DA PÁGINA
         <>
-          <hr />
-          {editingPost ? (
-            // Este formulário usa a função 'handleUpdatePost'
-            <form onSubmit={handleUpdatePost} className="card">
-              <h2>Editar Post</h2>
+          {!token ? (
+            <form onSubmit={handleLogin} className="card">
+              <h2>Login</h2>
               <div className="form-group">
-                <label>Título:</label>
+                <label>Email: </label>
                 <input
-                  type="text"
-                  value={editingPost.title}
-                  onChange={(e) =>
-                    setEditingPost({ ...editingPost, title: e.target.value })
-                  }
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="lucas@gmail.com"
                 />
               </div>
               <div className="form-group">
-                <label>Conteúdo:</label>
-                <textarea
-                  value={editingPost.content}
-                  onChange={(e) =>
-                    setEditingPost({ ...editingPost, content: e.target.value })
-                  }
+                <label>Password: </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="123456"
                 />
               </div>
-              <button type="submit">Atualizar Post</button>
+              <button type="submit">Entrar</button>
+            </form>
+          ) : (
+            <div className="card">
+              <p>
+                <strong>Login efetuado com sucesso!</strong>
+              </p>
+              <button type="button" onClick={fetchPosts}>
+                Buscar Posts
+              </button>
               <button
                 type="button"
-                className="button-secondary"
-                onClick={() => setEditingPost(null)}
+                onClick={handleLogout}
+                className="button-danger"
               >
-                Cancelar
+                Sair (Logout)
               </button>
-            </form>
-          ) : (
-            // Este formulário usa a função 'handleCreatePost'
-            <form onSubmit={handleCreatePost} className="card">
-              <h2>Criar Novo Post</h2>
-              <div className="form-group">
-                <label>Título:</label>
-                <input
-                  type="text"
-                  value={newPostTitle}
-                  onChange={(e) => setNewPostTitle(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Conteúdo:</label>
-                <textarea
-                  value={newPostContent}
-                  onChange={(e) => setNewPostContent(e.target.value)}
-                />
-              </div>
-              <button type="submit">Criar Post</button>
-            </form>
+            </div>
           )}
+
+          {error && <p className="error-message">{error}</p>}
+
+          {token && (
+            <>
+              <hr />
+              {editingPost ? (
+                <form onSubmit={handleUpdatePost} className="card">
+                  <h2>Editar Post</h2>
+                  <div className="form-group">
+                    <label>Título:</label>
+                    <input
+                      type="text"
+                      value={editingPost.title}
+                      onChange={(e) =>
+                        setEditingPost({
+                          ...editingPost,
+                          title: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Conteúdo:</label>
+                    <textarea
+                      value={editingPost.content}
+                      onChange={(e) =>
+                        setEditingPost({
+                          ...editingPost,
+                          content: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <button type="submit">Atualizar Post</button>
+                  <button
+                    type="button"
+                    className="button-secondary"
+                    onClick={() => setEditingPost(null)}
+                  >
+                    Cancelar
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleCreatePost} className="card">
+                  <h2>Criar Novo Post</h2>
+                  <div className="form-group">
+                    <label>Título:</label>
+                    <input
+                      type="text"
+                      value={newPostTitle}
+                      onChange={(e) => setNewPostTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Conteúdo:</label>
+                    <textarea
+                      value={newPostContent}
+                      onChange={(e) => setNewPostContent(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit">Criar Post</button>
+                </form>
+              )}
+            </>
+          )}
+
+          <div className="posts-container">
+            <>
+              <h2>Posts</h2>
+              {posts.length > 0 ? (
+                <ul className="posts-list">
+                  {posts.map((post) => (
+                    <li key={post.id} className="post-item">
+                      <h3>{post.title}</h3>
+                      <p>{post.content}</p>
+                      <button onClick={() => handleSelectPost(post.id)}>
+                        Ver detalhes
+                      </button>
+                      {token && (
+                        <div style={{ marginTop: "10px" }}>
+                          <button
+                            className="button-danger"
+                            onClick={() => handleDeletePost(post.id)}
+                          >
+                            Apagar
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>
+                  Nenhum post disponível. Faça o login e clique em "Buscar
+                  Posts".
+                </p>
+              )}
+            </>
+          </div>
         </>
       )}
-      <div className="posts-container">
-        <>
-          <h2>Posts</h2>
-          {posts.length > 0 ? (
-            <ul className="posts-list">
-              {posts.map((post) => (
-                <li key={post.id} className="post-item">
-                  <h3>{post.title}</h3>
-                  <p>{post.content}</p>
-                  {/* Adicione este botão para chamar a função */}
-                  <button onClick={() => handleSelectPost(post.id)}>
-                    Ver detalhes
-                  </button>
-                  {token && (
-                    <div style={{ marginTop: "10px" }}>
-                      <button
-                        className="button-danger"
-                        onClick={() => handleDeletePost(post.id)}
-                      >
-                        Apagar
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              Nenhum post disponível. Faça o login e clique em "Buscar Posts".
-            </p>
-          )}
-        </>
-      </div>
     </div>
   );
 }
