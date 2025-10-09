@@ -161,15 +161,19 @@ function App() {
       <h1>Blog Frontend (React)</h1>
       <hr />
 
-    <div className="post-detail-view">
-        {selectedPost ? (
+      <div className="post-detail-view">
+        {selectedPost && (
           <div className="post-detail-view">
-            <button onClick={() => setSelectedPost(null)} className="button-secondary">
+            <button
+              onClick={() => setSelectedPost(null)}
+              className="button-secondary"
+            >
               &larr; Voltar para todos os posts
             </button>
             <div className="post-item"></div>
           </div>
-    </div>
+        )}
+      </div>
 
       {!token ? (
         <form onSubmit={handleLogin} className="card">
@@ -278,31 +282,35 @@ function App() {
 
       <div className="posts-container">
         <>
-        <h2>Posts</h2>
-        {posts.length > 0 ? (
-          <ul className="posts-list">
-            {posts.map((post) => (
-              <li key={post.id} className="post-item">
-                <h3>{post.title}</h3>
-                <p>{post.content}</p>
-                {token && (
-                  <div>
-                    <button
-                      className="button-danger"
-                      onClick={() => handleDeletePost(post.id)}
-                    >
-                      Apagar
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>
-            Nenhum post disponível. Faça o login e clique em "Buscar Posts".
-          </p>
-        )}
+          <h2>Posts</h2>
+          {posts.length > 0 ? (
+            <ul className="posts-list">
+              {posts.map((post) => (
+                <li key={post.id} className="post-item">
+                  <h3>{post.title}</h3>
+                  <p>{post.content}</p>
+                  {/* Adicione este botão para chamar a função */}
+                  <button onClick={() => handleSelectPost(post.id)}>
+                    Ver detalhes
+                  </button>
+                  {token && (
+                    <div style={{ marginTop: "10px" }}>
+                      <button
+                        className="button-danger"
+                        onClick={() => handleDeletePost(post.id)}
+                      >
+                        Apagar
+                      </button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>
+              Nenhum post disponível. Faça o login e clique em "Buscar Posts".
+            </p>
+          )}
         </>
       </div>
     </div>
