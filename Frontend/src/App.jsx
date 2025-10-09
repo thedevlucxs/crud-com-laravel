@@ -17,16 +17,39 @@ function App() {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
 
-  // effects
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [editingPost, setEditingPost] = useState(null);
+
+  const [authUser, setAuthUser] = useState(null);
+
+  const [selectedPost, setSelectedPost] = useState(null);
+
   useEffect(() => {
+    // Função para buscar dados protegidos
+    const fetchData = async (authToken) => {
+      api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+      try {
+        const userResponse = await api.get("/user");
+        setAuthUser(userResponse.data); // <-- Busca o usuário
+        fetchPosts(); // <-- Busca os posts
+      } catch (err) {
+        console.error("Failed to fetch user data:", err);
+        setToken(null); // Limpa o token se for inválido
+      }
+    };
+
     if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       localStorage.setItem("token", token);
+      fetchData(token); // <-- Chama a função para buscar os dados
     } else {
-      delete api.defaults.headers.common["Authorization"];
+      // Limpa tudo se não houver token
       localStorage.removeItem("token");
+      delete api.defaults.headers.common["Authorization"];
+      setAuthUser(null);
+      setPosts([]);
     }
-  }, [token]);
+  }, [token]); // <-- Executa sempre que o token mudar
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -67,6 +90,58 @@ function App() {
     }
   };
 
+  const handleSelectPost = async (postId) => {
+    setError("");
+    try {
+      const response = await api.get(`/posts/${postId}`);
+      setSelectedPost(response.data);
+    } catch (err) {
+      setError("Failed to fetch post details.");
+      console.error("Fetch post details error:", err);
+    }
+  };
+
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!authUser) {
+      setError("You must be logged in to create a post.");
+      return;
+    }
+    try {
+      const response = await api.post("/posts", {
+        title: newPostTitle,
+        content: newPostContent,
+        user_id: authUser.id,
+      });
+      setPosts([...posts, response.data]);
+      setNewPostTitle("");
+      setNewPostContent("");
+    } catch (err) {
+      setError("Failed to create post.");
+      console.error("Create post error:", err);
+    }
+  };
+
+  const handleUpdatePost = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!editingPost) return;
+    try {
+      const response = await api.put(`/posts/${editingPost.id}`, {
+        title: editingPost.title,
+        content: editingPost.content,
+      });
+      setPosts(
+        posts.map((post) => (post.id === editingPost.id ? response.data : post))
+      );
+      setEditingPost(null);
+    } catch (err) {
+      setError("Failed to update post.");
+      console.error("Update post error:", err);
+    }
+  };
+
   const handleDeletePost = async (postId) => {
     setError("");
     if (!window.confirm("Are you sure you want to delete this post?")) {
@@ -85,6 +160,16 @@ function App() {
     <div className="app-container">
       <h1>Blog Frontend (React)</h1>
       <hr />
+
+    <div className="post-detail-view">
+        {selectedPost ? (
+          <div className="post-detail-view">
+            <button onClick={() => setSelectedPost(null)} className="button-secondary">
+              &larr; Voltar para todos os posts
+            </button>
+            <div className="post-item"></div>
+          </div>
+    </div>
 
       {!token ? (
         <form onSubmit={handleLogin} className="card">
@@ -116,7 +201,6 @@ function App() {
           <p>
             <strong>Login efetuado com sucesso!</strong>
           </p>
-          {/* CORRIGIDO: Sintaxe do onClick e o texto do botão estavam misturados */}
           <button type="button" onClick={fetchPosts}>
             Buscar Posts
           </button>
@@ -132,7 +216,68 @@ function App() {
 
       {error && <p className="error-message">{error}</p>}
 
+      {token && (
+        <>
+          <hr />
+          {editingPost ? (
+            // Este formulário usa a função 'handleUpdatePost'
+            <form onSubmit={handleUpdatePost} className="card">
+              <h2>Editar Post</h2>
+              <div className="form-group">
+                <label>Título:</label>
+                <input
+                  type="text"
+                  value={editingPost.title}
+                  onChange={(e) =>
+                    setEditingPost({ ...editingPost, title: e.target.value })
+                  }
+                />
+              </div>
+              <div className="form-group">
+                <label>Conteúdo:</label>
+                <textarea
+                  value={editingPost.content}
+                  onChange={(e) =>
+                    setEditingPost({ ...editingPost, content: e.target.value })
+                  }
+                />
+              </div>
+              <button type="submit">Atualizar Post</button>
+              <button
+                type="button"
+                className="button-secondary"
+                onClick={() => setEditingPost(null)}
+              >
+                Cancelar
+              </button>
+            </form>
+          ) : (
+            // Este formulário usa a função 'handleCreatePost'
+            <form onSubmit={handleCreatePost} className="card">
+              <h2>Criar Novo Post</h2>
+              <div className="form-group">
+                <label>Título:</label>
+                <input
+                  type="text"
+                  value={newPostTitle}
+                  onChange={(e) => setNewPostTitle(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Conteúdo:</label>
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                />
+              </div>
+              <button type="submit">Criar Post</button>
+            </form>
+          )}
+        </>
+      )}
+
       <div className="posts-container">
+        <>
         <h2>Posts</h2>
         {posts.length > 0 ? (
           <ul className="posts-list">
@@ -158,6 +303,7 @@ function App() {
             Nenhum post disponível. Faça o login e clique em "Buscar Posts".
           </p>
         )}
+        </>
       </div>
     </div>
   );
