@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import LoginForm from "./components/LoginForm";
 import "./App.css";
 
 const api = axios.create({
@@ -279,7 +280,7 @@ function App() {
         // SENÃO (se nenhum post estiver selecionado), MOSTRA O RESTO DA PÁGINA
         <>
           {!token ? (
-            <LoginForm onLoginSucess={handleLoginSucess} />
+            <LoginForm onLoginSuccess={handleLoginSucess} />
           ) : (
             <div className="card">
               <p>
