@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import LoginForm from "./components/LoginForm";
 import "./App.css";
 
 const api = axios.create({
@@ -11,8 +12,6 @@ const api = axios.create({
 
 function App() {
   // state variables
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
@@ -74,21 +73,10 @@ function App() {
     };
   }, [token]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const response = await api.post("/login", {
-        email: email,
-        password: password,
-        device_name: "react-app",
-      });
-      // Ela guarda o token no estado, o que faz a interface mudar para a área logada.
-      setToken(response.data.access_token);
-    } catch (err) {
-      setError("Login failed. Please check your credentials.");
-      console.error("Login error:", err);
-    }
+  const handleLoginSucess = (token, userData) => {
+    localStorage.setItem("token", token);
+    setToken(token);
+    setAuthUser(userData);
   };
 
   const fetchPosts = async () => {
@@ -292,30 +280,7 @@ function App() {
         // SENÃO (se nenhum post estiver selecionado), MOSTRA O RESTO DA PÁGINA
         <>
           {!token ? (
-            <form onSubmit={handleLogin} className="card">
-              <h2>Login</h2>
-              <div className="form-group">
-                <label>Email: </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="lucas@gmail.com"
-                />
-              </div>
-              <div className="form-group">
-                <label>Password: </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="123456"
-                />
-              </div>
-              <button type="submit">Entrar</button>
-            </form>
+            <LoginForm onLoginSuccess={handleLoginSucess} />
           ) : (
             <div className="card">
               <p>
