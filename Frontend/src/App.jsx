@@ -4,6 +4,7 @@ import LoginForm from "./components/LoginForm";
 import PostList from "./components/PostList";
 import PostDetail from "./components/PostDetail";
 import CreatePostForm from "./components/CreatePostForm";
+import EditPostForm from "./components/EditPostForm";
 import "./App.css";
 
 const api = axios.create({
