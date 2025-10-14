@@ -16,7 +16,7 @@ function LoginForm({ onLoginSuccess }) {
         device_name: "react-app",
       });
       // Ela guarda o token no estado, o que faz a interface mudar para a área logada.
-      onLoginSuccess(response.data.token, response.data.user);
+      onLoginSuccess(response.data.access_token, response.data.user);
     } catch (err) {
       setError("Login failed. Please check your credentials.");
       console.error("Login error", err);
