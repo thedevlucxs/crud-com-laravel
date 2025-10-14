@@ -21,7 +21,7 @@ class UserFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
+    public function definition(): array //retorna um array com as informações
     {
         $thumb = fake()->image('public/images/users', 640, 480);
         return [

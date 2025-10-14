@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import LoginForm from "./components/LoginForm";
+import PostList from "./components/PostList";
+import PostDetail from "./components/PostDetail";
+import CreatePostForm from "./components/CreatePostForm";
+import EditPostForm from "./components/EditPostForm";
 import "./App.css";
 
 const api = axios.create({
@@ -11,39 +16,66 @@ const api = axios.create({
 
 function App() {
   // state variables
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
 
-  // effects
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [editingPost, setEditingPost] = useState(null);
+
+  const [authUser, setAuthUser] = useState(null);
+
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  const [newComment, setNewComment] = useState("");
+
   useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchData = async (authToken) => {
+      api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+      try {
+        const userResponse = await api.get("/user", {
+          signal: controller.signal,
+        });
+        const postsResponse = await api.get("/posts", {
+          signal: controller.signal,
+        });
+
+        setAuthUser(userResponse.data);
+        setPosts(postsResponse.data);
+      } catch (err) {
+        if (err.name === "CanceledError") {
+          console.log("Pedido cancelado com sucesso.");
+        } else {
+          console.error("Falha ao buscar dados:", err);
+          setToken(null);
+        }
+      }
+    };
+
     if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       localStorage.setItem("token", token);
+      fetchData(token);
     } else {
-      delete api.defaults.headers.common["Authorization"];
       localStorage.removeItem("token");
+      delete api.defaults.headers.common["Authorization"];
+      setAuthUser(null);
+      setPosts([]);
     }
+
+    return () => {
+      console.log("Limpeza: abortando pedidos pendentes.");
+      controller.abort();
+    };
   }, [token]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const response = await api.post("/login", {
-        email: email,
-        password: password,
-        device_name: "react-app",
-      });
-      // Ela guarda o token no estado, o que faz a interface mudar para a área logada.
-      setToken(response.data.access_token);
-    } catch (err) {
-      setError("Login failed. Please check your credentials.");
-      console.error("Login error:", err);
-    }
+  const handleLoginSucess = (token, userData) => {
+    localStorage.setItem("token", token);
+    setToken(token);
+    setAuthUser(userData);
   };
 
   const fetchPosts = async () => {
@@ -84,6 +116,95 @@ function App() {
     }
   };
 
+  const handleSelectPost = async (postId) => {
+    setError("");
+    try {
+      const response = await api.get(`/posts/${postId}`);
+      setSelectedPost(response.data);
+    } catch (err) {
+      setError("Failed to fetch post details.");
+      console.error("Fetch post details error:", err);
+    }
+  };
+
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!authUser) {
+      setError("You must be logged in to create a post.");
+      return;
+    }
+    try {
+      const response = await api.post("/posts", {
+        title: newPostTitle,
+        content: newPostContent,
+        user_id: authUser.id,
+      });
+      setPosts([...posts, response.data]);
+      setNewPostTitle("");
+      setNewPostContent("");
+    } catch (err) {
+      setError("Failed to create post.");
+      console.error("Create post error:", err);
+    }
+  };
+
+  const handleCreateComment = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!authUser || !selectedPost) {
+      setError("You must be logged in to comment.");
+      return;
+    }
+    try {
+      const response = await api.post(`/comments`, {
+        comment: newComment,
+        user_id: authUser.id,
+        post_id: selectedPost.id,
+      });
+
+      const newCommentWithUser = {
+        ...response.data,
+        user: {
+          firstName: authUser.firstName,
+          lastName: authUser.lastName,
+        },
+      };
+      setSelectedPost({
+        ...selectedPost,
+        comments: [...(selectedPost.comments || []), newCommentWithUser],
+      });
+      setNewComment("");
+    } catch (err) {
+      setError("Failed to create comment.");
+      console.error("Create comment error:", err);
+    }
+  };
+
+  const handleEditPost = (post) => {
+    setEditingPost(post);
+    setSelectedPost(null);
+  };
+
+  const handleUpdatePost = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!editingPost) return;
+    try {
+      const response = await api.put(`/posts/${editingPost.id}`, {
+        title: editingPost.title,
+        content: editingPost.content,
+      });
+      setPosts(
+        posts.map((post) => (post.id === editingPost.id ? response.data : post))
+      );
+      setEditingPost(null);
+    } catch (err) {
+      setError("Failed to update post.");
+      console.error("Update post error:", err);
+    }
+  };
+
   const handleDeletePost = async (postId) => {
     setError("");
     if (!window.confirm("Are you sure you want to delete this post?")) {
@@ -100,119 +221,73 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>Blog Frontend (React)</h1>
+      <h1>Blog com React e Laravel</h1>
       <hr />
 
-      {!token ? (
-        <form onSubmit={handleLogin} className="card">
-          <h2>Login</h2>
-          <div className="form-group">
-            <label>Email: </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="lucas@gmail.com"
-            />
-          </div>
-          <div className="form-group">
-            <label>Password: </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="123456"
-            />
-          </div>
-          <button type="submit">Entrar</button>
-        </form>
+      {selectedPost ? (
+        <PostDetail
+          post={selectedPost}
+          authUser={authUser}
+          token={token}
+          handleEditPost={handleEditPost}
+          handleCreateComment={handleCreateComment}
+          handleBackToList={() => setSelectedPost(null)}
+          newComment={newComment}
+          setNewComment={setNewComment}
+        />
       ) : (
-        <div className="card">
-          <p>
-            <strong>Login efetuado com sucesso!</strong>
-          </p>
-          {/* CORRIGIDO: Sintaxe do onClick e o texto do botão estavam misturados */}
-          <button type="button" onClick={fetchPosts}>
-            Buscar Posts
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="button-danger"
-          >
-            Sair (Logout)
-          </button>
-        </div>
-      )}
-
-      {error && <p className="error-message">{error}</p>}
-
-      <div className="posts-container">
-        {selectedPost ? (
-          <div className="post-item">
-            <h2>{selectedPost.title}</h2>
-            <p>
-              <strong>Autor:</strong> {selectedPost.user.firstName}{" "}
-              {selectedPost.user.lastName}
-            </p>
-            <p>{selectedPost.content}</p>
-            <hr />
-            <h3>Comentários</h3>
-            {selectedPost.comments && selectedPost.comments.length > 0 ? (
-              <ul>
-                {selectedPost.comments.map((comment) => (
-                  <li key={comment.id}>
-                    <p>{comment.comment}</p>
-                    <small>Por: {comment.user.firstName}</small>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>Nenhum comentário neste post.</p>
-            )}
-            <button className="button-secondary" onClick={handleBackToList}>
-              Voltar para a Lista
-            </button>
-          </div>
-        ) : (
-          <div>
-            <h2>Posts</h2>
-            {posts.length > 0 ? (
-              <ul className="posts-list">
-                {posts.map((post) => (
-                  <li key={post.id} className="post-item">
-                    <h3>{post.title}</h3>
-                    <p>{post.content.substring(0, 100)}...</p>
-                    {token && (
-                      <div>
-                        {/* ESTE É O NOVO BOTÃO */}
-                        <button
-                          className="button-secondary"
-                          onClick={() => handleViewPost(post.id)}
-                        >
-                          Ver detalhes
-                        </button>
-                        <button
-                          className="button-danger"
-                          onClick={() => handleDeletePost(post.id)}
-                        >
-                          Apagar
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
+        <>
+          {!token ? (
+            <LoginForm onLoginSuccess={handleLoginSucess} />
+          ) : (
+            <div className="card">
               <p>
-                Nenhum post disponível. Faça o login e clique em "Buscar Posts".
+                <strong>Login efetuado com sucesso!</strong>
               </p>
-            )}
-          </div>
-        )}
-      </div>
+              <button type="button" onClick={fetchPosts}>
+                Buscar Posts
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="button-danger"
+              >
+                Sair (Logout)
+              </button>
+            </div>
+          )}
+
+          {error && <p className="error-message">{error}</p>}
+
+          {token && (
+            <>
+              <hr />
+              {editingPost ? (
+                <EditPostForm
+                  editingPost={editingPost}
+                  setEditingPost={setEditingPost}
+                  handleUpdatePost={handleUpdatePost}
+                />
+              ) : (
+                <CreatePostForm
+                  handleCreatePost={handleCreatePost}
+                  newPostTitle={newPostTitle}
+                  setNewPostTitle={setNewPostTitle}
+                  newPostContent={newPostContent}
+                  setNewPostContent={setNewPostContent}
+                />
+              )}
+            </>
+          )}
+          <PostList
+            posts={posts}
+            handleSelectPost={handleSelectPost}
+            handleDeletePost={handleDeletePost}
+            authUser={authUser}
+            token={token}
+          />
+        </>
+      )}
     </div>
   );
 }

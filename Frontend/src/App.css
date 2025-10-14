@@ -1,46 +1,110 @@
-body {
-  font-family: sans-serif;
-  margin: 0;
-  background-color: #f4f7f6;
+/* ==========================================================================
+   Configurações Globais e Variáveis
+   ========================================================================== */
+
+:root {
+  --cor-primaria: #007bff;
+  --cor-primaria-hover: #0056b3;
+  --cor-secundaria: #6c757d;
+  --cor-secundaria-hover: #5a6268;
+  --cor-perigo: #dc3545;
+  --cor-perigo-hover: #c82333;
+  --cor-sucesso: #28a745;
+  --cor-fundo: #f4f7f6;
+  --cor-superficie: #ffffff;
+  --cor-texto: #212529;
+  --cor-borda: #dee2e6;
+  --raio-borda: 8px;
+  --sombra-caixa: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  margin: 0;
+  background-color: var(--cor-fundo);
+  color: var(--cor-texto);
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Layout Principal
+   ========================================================================== */
 
 .app-container {
   max-width: 800px;
   margin: 2rem auto;
   padding: 2rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: var(--cor-superficie);
+  border-radius: var(--raio-borda);
+  box-shadow: var(--sombra-caixa);
+}
+
+h1,
+h2,
+h3 {
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 hr {
   border: none;
-  border-top: 1px solid #eee;
-  margin: 1.5rem 0;
+  border-top: 1px solid var(--cor-borda);
+  margin: 2rem 0;
 }
 
+/* ==========================================================================
+   Componente Card
+   ========================================================================== */
+
 .card {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--cor-borda);
   padding: 1.5rem;
-  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-radius: var(--raio-borda);
   background-color: #fafafa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
+/* ==========================================================================
+   Formulários
+   ========================================================================== */
 
 .form-group {
   margin-bottom: 1rem;
 }
 
 .form-group label {
-  display: inline-block;
-  width: 80px;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
 }
 
-.form-group input {
-  padding: 0.5rem;
-  width: 250px;
-  border: 1px solid #ccc;
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--cor-borda);
   border-radius: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
 }
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* ==========================================================================
+   Botões
+   ========================================================================== */
 
 button {
   padding: 0.6rem 1.2rem;
@@ -49,43 +113,44 @@ button {
   cursor: pointer;
   font-weight: bold;
   font-size: 0.9rem;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, transform 0.1s;
+  margin-right: 0.5rem;
+}
+
+button:hover {
+  transform: translateY(-1px);
 }
 
 button[type="submit"] {
-  background-color: #007bff;
+  background-color: var(--cor-primaria);
   color: white;
 }
 
 button[type="submit"]:hover {
-  background-color: #0056b3;
+  background-color: var(--cor-primaria-hover);
 }
 
 .button-secondary {
-  margin-left: 1rem;
-  background-color: #6c757d;
+  background-color: var(--cor-secundaria);
   color: white;
 }
 
 .button-secondary:hover {
-  background-color: #5a6268;
+  background-color: var(--cor-secundaria-hover);
 }
 
 .button-danger {
-  margin-left: 1rem;
-  background-color: #dc3545;
+  background-color: var(--cor-perigo);
   color: white;
 }
 
 .button-danger:hover {
-  background-color: #c82333;
+  background-color: var(--cor-perigo-hover);
 }
 
-.error-message {
-  color: #dc3545;
-  margin-top: 1rem;
-  font-weight: bold;
-}
+/* ==========================================================================
+   Posts
+   ========================================================================== */
 
 .posts-container {
   margin-top: 2rem;
@@ -97,13 +162,71 @@ button[type="submit"]:hover {
 }
 
 .post-item {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-borda);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--cor-superficie);
+  transition: box-shadow 0.2s;
+}
+
+.post-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .post-item h3 {
-  margin-top: 0;
   margin-bottom: 0.5rem;
-  color: #333;
+  color: var(--cor-primaria);
+}
+
+/* ==========================================================================
+   Detalhes do Post e Comentários
+   ========================================================================== */
+
+.post-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.post-detail-content p {
+  white-space: pre-wrap;
+}
+
+.comments-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.comments-list {
+  list-style: none;
+  padding: 0;
+}
+
+.comment-item {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: var(--raio-borda);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.comment-item p {
+  margin: 0;
+}
+
+/* ==========================================================================
+   Erro
+   ========================================================================== */
+
+.error-message {
+  color: var(--cor-perigo);
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 1rem;
+  border-radius: var(--raio-borda);
+  margin-top: 1rem;
+  text-align: center;
 }

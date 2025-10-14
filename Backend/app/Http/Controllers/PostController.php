@@ -42,6 +42,10 @@ class PostController extends Controller
             return response()->json(['message' => 'Post not found'], 404);
         }
 
+        if ($request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $validatedData = $request->validate([
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|string',
@@ -57,12 +61,17 @@ class PostController extends Controller
         return response()->json($post);
     }
 
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $post = Post::find($id);
         if (!$post) {
             return response()->json(['message' => 'Post not found'], 404);
         }
+
+        if ($request->user()->id !== $post->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $post->delete();
         return response()->json(null, 204);
     }
