@@ -365,6 +365,13 @@ function App() {
               )}
             </>
           )}
+          <PostList
+            posts={posts}
+            handleSelectPost={handleSelectPost}
+            handleDeletePost={handleDeletePost}
+            authUser={authUser}
+            token={token}
+          />
         </>
       )}
     </div>
