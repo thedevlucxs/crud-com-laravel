@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LoginForm from "./components/LoginForm";
 import PostList from "./components/PostList";
+import PostDetail from "./components/PostDetail";
 import "./App.css";
 
 const api = axios.create({
@@ -212,71 +213,16 @@ function App() {
 
       {selectedPost ? (
         // SE um post estiver selecionado, MOSTRA SÓ ISTO
-        <div className="post-detail-view">
-          <div className="card">
-            <div className="post-detail-header">
-              <button
-                onClick={() => setSelectedPost(null)}
-                className="button-secondary"
-              >
-                &larr; Voltar para todos os posts
-              </button>
-
-              {token && authUser && selectedPost.user_id === authUser.id && (
-                <button onClick={() => handleEditPost(selectedPost)}>
-                  Editar
-                </button>
-              )}
-            </div>
-
-            <div className="post-item post-detail-content">
-              <h2>{selectedPost.title}</h2>
-              <p>
-                <strong>Autor:</strong> {selectedPost.user.firstName}{" "}
-                {selectedPost.user.lastName}
-              </p>
-              <hr />
-              <p>{selectedPost.content}</p>
-            </div>
-
-            <div className="comments-section">
-              <h3>Comentários</h3>
-              {selectedPost.comments && selectedPost.comments.length > 0 ? (
-                <ul className="comments-list">
-                  {selectedPost.comments.map((comment) => (
-                    <li key={comment.id} className="comment-item">
-                      <p>
-                        <strong>{comment.user.firstName}:</strong>{" "}
-                        {comment.comment}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>Ainda não há comentários para este post.</p>
-              )}
-
-              {/* Formulário para adicionar novo comentário */}
-              {token && (
-                <form
-                  onSubmit={handleCreateComment}
-                  style={{ marginTop: "20px" }}
-                >
-                  <div className="form-group">
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Escreva seu comentário..."
-                      required
-                      style={{ width: "100%", minHeight: "80px" }}
-                    />
-                  </div>
-                  <button type="submit">Comentar</button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
+        <PostDetail
+          post={selectedPost}
+          authUser={authUser}
+          token={token}
+          handleEditPost={handleEditPost}
+          handleCreateComment={handleCreateComment}
+          handleBackToList={() => setSelectedPost(null)}
+          newComment={newComment}
+          setNewComment={setNewComment}
+        />
       ) : (
         // SENÃO (se nenhum post estiver selecionado), MOSTRA O RESTO DA PÁGINA
         <>
