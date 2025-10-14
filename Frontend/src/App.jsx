@@ -3,6 +3,7 @@ import axios from "axios";
 import LoginForm from "./components/LoginForm";
 import PostList from "./components/PostList";
 import PostDetail from "./components/PostDetail";
+import CreatePostForm from "./components/CreatePostForm";
 import "./App.css";
 
 const api = axios.create({
@@ -29,13 +30,11 @@ function App() {
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-    //Criamos um AbortController para este "efeito"
     const controller = new AbortController();
 
     const fetchData = async (authToken) => {
       api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
       try {
-        //Passamos o "sinal" do controller para cada pedido axios
         const userResponse = await api.get("/user", {
           signal: controller.signal,
         });
@@ -46,12 +45,9 @@ function App() {
         setAuthUser(userResponse.data);
         setPosts(postsResponse.data);
       } catch (err) {
-        // Quando o pedido é cancelado, o axios lança um erro.
-        // Verificamos se o erro foi de cancelamento e, se for, ignora.
         if (err.name === "CanceledError") {
           console.log("Pedido cancelado com sucesso.");
         } else {
-          // Se for outro tipo de erro, trata.
           console.error("Falha ao buscar dados:", err);
           setToken(null);
         }
@@ -68,7 +64,6 @@ function App() {
       setPosts([]);
     }
 
-    // 3. A função de limpeza agora chama o método abort()
     return () => {
       console.log("Limpeza: abortando pedidos pendentes.");
       controller.abort();
@@ -212,7 +207,6 @@ function App() {
       <hr />
 
       {selectedPost ? (
-        // SE um post estiver selecionado, MOSTRA SÓ ISTO
         <PostDetail
           post={selectedPost}
           authUser={authUser}
@@ -224,7 +218,6 @@ function App() {
           setNewComment={setNewComment}
         />
       ) : (
-        // SENÃO (se nenhum post estiver selecionado), MOSTRA O RESTO DA PÁGINA
         <>
           {!token ? (
             <LoginForm onLoginSuccess={handleLoginSucess} />
@@ -252,62 +245,19 @@ function App() {
             <>
               <hr />
               {editingPost ? (
-                <form onSubmit={handleUpdatePost} className="card">
-                  <h2>Editar Post</h2>
-                  <div className="form-group">
-                    <label>Título:</label>
-                    <input
-                      type="text"
-                      value={editingPost.title}
-                      onChange={(e) =>
-                        setEditingPost({
-                          ...editingPost,
-                          title: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Conteúdo:</label>
-                    <textarea
-                      value={editingPost.content}
-                      onChange={(e) =>
-                        setEditingPost({
-                          ...editingPost,
-                          content: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <button type="submit">Atualizar Post</button>
-                  <button
-                    type="button"
-                    className="button-secondary"
-                    onClick={() => setEditingPost(null)}
-                  >
-                    Cancelar
-                  </button>
-                </form>
+                <EditPostForm
+                  editingPost={editingPost}
+                  setEditingPost={setEditingPost}
+                  handleUpdatePost={handleUpdatePost}
+                />
               ) : (
-                <form onSubmit={handleCreatePost} className="card">
-                  <h2>Criar Novo Post</h2>
-                  <div className="form-group">
-                    <label>Título:</label>
-                    <input
-                      type="text"
-                      value={newPostTitle}
-                      onChange={(e) => setNewPostTitle(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Conteúdo:</label>
-                    <textarea
-                      value={newPostContent}
-                      onChange={(e) => setNewPostContent(e.target.value)}
-                    />
-                  </div>
-                  <button type="submit">Criar Post</button>
-                </form>
+                <CreatePostForm
+                  handleCreatePost={handleCreatePost}
+                  newPostTitle={newPostTitle}
+                  setNewPostTitle={setNewPostTitle}
+                  newPostContent={newPostContent}
+                  setNewPostContent={setNewPostContent}
+                />
               )}
             </>
           )}
