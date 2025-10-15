@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
@@ -25,7 +26,7 @@ class UserService
             'firstName' => $data['firstName'],
             'lastName' => $data['lastName'],
             'email' => $data['email'],
-            'password' => password_hash($data['password'], \PASSWORD_DEFAULT),
+            'password' => Hash::make($data['password']),
         ]);
     }
 
