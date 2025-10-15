@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import { login as apiLogin } from "../services/apiService";
 
 function LoginForm({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
@@ -10,11 +10,7 @@ function LoginForm({ onLoginSuccess }) {
     e.preventDefault();
     setError("");
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/login", {
-        email: email,
-        password: password,
-        device_name: "react-app",
-      });
+      const response = await apiLogin(email, password);
       // Ela guarda o token no estado, o que faz a interface mudar para a área logada.
       onLoginSuccess(response.data.access_token, response.data.user);
     } catch (err) {

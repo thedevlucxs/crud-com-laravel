@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  logout as apiLogout,
+  getAuthenticatedUser,
+  fetchPosts as apiFetchPosts,
+  fetchPostById,
+  createPost as apiCreatePost,
+  updatePost as apiUpdatePost,
+  deletePost as apiDeletePost,
+  createComment as apiCreateComment,
+} from "./services/apiService";
+
 import LoginForm from "./components/LoginForm";
 import PostList from "./components/PostList";
 import PostDetail from "./components/PostDetail";
@@ -7,81 +17,60 @@ import CreatePostForm from "./components/CreatePostForm";
 import EditPostForm from "./components/EditPostForm";
 import "./App.css";
 
-const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
-  headers: {
-    Accept: "application/json",
-  },
-});
-
 function App() {
-  // state variables
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
-  const [selectedPost, setSelectedPost] = useState(null);
-
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
   const [editingPost, setEditingPost] = useState(null);
-
   const [authUser, setAuthUser] = useState(null);
-
   const [selectedPost, setSelectedPost] = useState(null);
-
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchData = async (authToken) => {
-      api.defaults.headers.common["Authorization"] = `Bearer ${authToken}`;
+    const fetchData = async () => {
       try {
-        const userResponse = await api.get("/user", {
-          signal: controller.signal,
-        });
-        const postsResponse = await api.get("/posts", {
-          signal: controller.signal,
-        });
-
+        const userResponse = await getAuthenticatedUser();
+        const postsResponse = await apiFetchPosts();
         setAuthUser(userResponse.data);
         setPosts(postsResponse.data);
       } catch (err) {
-        if (err.name === "CanceledError") {
-          console.log("Pedido cancelado com sucesso.");
-        } else {
-          console.error("Falha ao buscar dados:", err);
-          setToken(null);
-        }
+        console.error("Falha ao buscar dados:", err);
+        setToken(null);
+        localStorage.removeItem("token");
       }
     };
 
     if (token) {
-      localStorage.setItem("token", token);
-      fetchData(token);
+      fetchData();
     } else {
-      localStorage.removeItem("token");
-      delete api.defaults.headers.common["Authorization"];
       setAuthUser(null);
       setPosts([]);
     }
-
-    return () => {
-      console.log("Limpeza: abortando pedidos pendentes.");
-      controller.abort();
-    };
   }, [token]);
 
-  const handleLoginSucess = (token, userData) => {
+  const handleLoginSuccess = (token, userData) => {
     localStorage.setItem("token", token);
     setToken(token);
     setAuthUser(userData);
   };
 
+  const handleLogout = async () => {
+    try {
+      await apiLogout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setToken(null);
+      localStorage.removeItem("token");
+    }
+  };
+
   const fetchPosts = async () => {
     setError("");
     try {
-      const response = await api.get("/posts");
+      const response = await apiFetchPosts();
       setPosts(response.data);
       setSelectedPost(null);
     } catch (err) {
@@ -90,36 +79,10 @@ function App() {
     }
   };
 
-  const handleViewPost = async (postId) => {
-    setError("");
-    try {
-      const response = await api.get(`/posts/${postId}`);
-      setSelectedPost(response.data);
-    } catch (err) {
-      setError("Failed to fetch post details.");
-      console.error("Fetch post details error:", err);
-    }
-  };
-
-  const handleBackToList = () => {
-    setSelectedPost(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await api.post("/logout");
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      setToken(null);
-      setPosts([]);
-    }
-  };
-
   const handleSelectPost = async (postId) => {
     setError("");
     try {
-      const response = await api.get(`/posts/${postId}`);
+      const response = await fetchPostById(postId);
       setSelectedPost(response.data);
     } catch (err) {
       setError("Failed to fetch post details.");
@@ -130,12 +93,9 @@ function App() {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     setError("");
-    if (!authUser) {
-      setError("You must be logged in to create a post.");
-      return;
-    }
+    if (!authUser) return;
     try {
-      const response = await api.post("/posts", {
+      const response = await apiCreatePost({
         title: newPostTitle,
         content: newPostContent,
         user_id: authUser.id,
@@ -152,28 +112,18 @@ function App() {
   const handleCreateComment = async (e) => {
     e.preventDefault();
     setError("");
-    if (!authUser || !selectedPost) {
-      setError("You must be logged in to comment.");
-      return;
-    }
+    if (!authUser || !selectedPost) return;
     try {
-      const response = await api.post(`/comments`, {
+      const response = await apiCreateComment({
         comment: newComment,
         user_id: authUser.id,
         post_id: selectedPost.id,
       });
-
-      const newCommentWithUser = {
-        ...response.data,
-        user: {
-          firstName: authUser.firstName,
-          lastName: authUser.lastName,
-        },
-      };
-      setSelectedPost({
-        ...selectedPost,
-        comments: [...(selectedPost.comments || []), newCommentWithUser],
-      });
+      const newCommentWithUser = { ...response.data, user: authUser };
+      setSelectedPost((prevPost) => ({
+        ...prevPost,
+        comments: [...(prevPost.comments || []), newCommentWithUser],
+      }));
       setNewComment("");
     } catch (err) {
       setError("Failed to create comment.");
@@ -191,7 +141,7 @@ function App() {
     setError("");
     if (!editingPost) return;
     try {
-      const response = await api.put(`/posts/${editingPost.id}`, {
+      const response = await apiUpdatePost(editingPost.id, {
         title: editingPost.title,
         content: editingPost.content,
       });
@@ -207,11 +157,9 @@ function App() {
 
   const handleDeletePost = async (postId) => {
     setError("");
-    if (!window.confirm("Are you sure you want to delete this post?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
-      await api.delete(`/posts/${postId}`);
+      await apiDeletePost(postId);
       setPosts(posts.filter((post) => post.id !== postId));
     } catch (err) {
       setError("Failed to delete post.");
@@ -223,7 +171,6 @@ function App() {
     <div className="app-container">
       <h1>Blog com React e Laravel</h1>
       <hr />
-
       {selectedPost ? (
         <PostDetail
           post={selectedPost}
@@ -238,7 +185,7 @@ function App() {
       ) : (
         <>
           {!token ? (
-            <LoginForm onLoginSuccess={handleLoginSucess} />
+            <LoginForm onLoginSuccess={handleLoginSuccess} />
           ) : (
             <div className="card">
               <p>
@@ -256,9 +203,7 @@ function App() {
               </button>
             </div>
           )}
-
           {error && <p className="error-message">{error}</p>}
-
           {token && (
             <>
               <hr />
