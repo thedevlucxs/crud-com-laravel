@@ -28,10 +28,7 @@ class PostController extends Controller
 
     public function show(string $id)
     {
-        $post = Post::with('user', 'comments.user')->find($id);
-        if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
-        }
+        $post = Post::with('user', 'comments.user')->findOrFail($id);
         return response()->json($post);
     }
 
