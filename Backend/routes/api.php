@@ -15,7 +15,6 @@ Route::get('/comments/{id}', [CommentController::class, 'show']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::get('/posts', [PostController::class, 'index']);
 
-
 // Rotas Protegidas (precisa de token para acessar)
 Route::middleware('auth:sanctum')->group(function () {
 

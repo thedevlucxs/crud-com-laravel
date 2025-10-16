@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             'firstName' => 'Lucas',
             'lastName' => 'Developer',
             'email' => 'lucas@gmail.com',
-            'password' => Hash::make('123456'), // A senha será '123456'
+            'password' => ('123456'), // A senha será '123456'
         ]);
 
         // Cria mais 10 utilizadores aleatórios

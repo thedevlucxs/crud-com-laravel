@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
@@ -23,7 +24,23 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
+        Log::info('--- Nova Tentativa de Login ---');
+        log::info('Email recebido: ' . $request->email);
+
         $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            Log::error('RESULTADO: Utilizador não encontrado na base de dados.');
+        } else {
+            Log::info('RESULTADO: Utilizador encontrado. ID:' . $user->id);
+            Log::info('Hash na BD: ' . $user->password);
+
+        if (Hash::check($request->password, $user->password)) {
+            Log::info('VERIFICAÇÃO DA SENHA: SUCESSO.');
+        } else {
+            Log::error('VERIFICAÇÃO DA SENHA: FALHA. A senha fornecida não corresponde ao hash.');
+        }
+    }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
