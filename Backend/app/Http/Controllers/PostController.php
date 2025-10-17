@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Http\Requests\StorePostRequest;
 use App\Services\PostService;
+use App\Http\Resources\PostResource;
 
 class PostController extends Controller
 {
@@ -18,20 +19,19 @@ class PostController extends Controller
 
     public function index()
     {
-        return response()->json(Post::with('user')->get());
+        $posts = $this->postService->getAllPosts();
+        return PostResource::collection($posts);
     }
 
     public function store(StorePostRequest $request)
     {
-    $validatedData = $request->validated(); // Apenas os dados validados
-    $validatedData['slug'] = Str::slug($validatedData['title']);
-    $post = Post::create($validatedData);
-    return response()->json($post, 201);
+    $post = $this->postService->createPost($request->validated());
+    return new PostResource($post);
     }
 
     public function show(string $id)
     {
-        $post = Post::with('user', 'comments.user')->findOrFail($id);
+        $post = $this->postService->findPostById($id);
         return response()->json($post);
     }
 
