@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Services\CommentService;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    protected readonly CommentService $commentService;
+
+    public function __construct(CommentService $commentService)
+    {
+        $this->commentService = $commentService;
+    }
+
     public function index()
     {
         return response()->json(Comment::with('user')->get());

@@ -5,25 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Http\Requests\StorePostRequest;
+use App\Services\PostService;
 
 class PostController extends Controller
 {
+    protected readonly PostService $postService;
+
+    public function __construct(PostService $postService){
+        $this->postService = $postService;
+    }
+
     public function index()
     {
         return response()->json(Post::with('user')->get());
     }
 
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'user_id' => 'required|exists:users,id',
-            'thumb' => 'nullable|string|max:255',
-        ]);
-        $validatedData['slug'] = Str::slug($validatedData['title']);
-        $post = Post::create($validatedData);
-        return response()->json($post, 201);
+    $validatedData = $request->validated(); // Apenas os dados validados
+    $validatedData['slug'] = Str::slug($validatedData['title']);
+    $post = Post::create($validatedData);
+    return response()->json($post, 201);
     }
 
     public function show(string $id)

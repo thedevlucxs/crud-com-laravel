@@ -26,7 +26,7 @@ class UserService
             'firstName' => $data['firstName'],
             'lastName' => $data['lastName'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => $data['password'],
         ]);
     }
 
