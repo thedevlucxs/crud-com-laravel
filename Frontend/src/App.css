@@ -2,6 +2,8 @@
    Configurações Globais e Variáveis
    ========================================================================== */
 
+  @config "../tailwind.config.js";
+
 :root {
   --cor-primaria: #007bff;
   --cor-primaria-hover: #0056b3;
