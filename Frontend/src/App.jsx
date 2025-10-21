@@ -17,6 +17,8 @@ import CreatePostForm from "./components/CreatePostForm";
 import EditPostForm from "./components/EditPostForm";
 import "./App.css";
 
+import {Button} from "@/components/ui/button"
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [posts, setPosts] = useState([]);
@@ -168,9 +170,9 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <h1>Blog com React e Laravel</h1>
-      <hr />
+    <div className="container mx-auto p-4 max-w-5x1">
+      <h1 className="text-3x1 font-bold text-center mb-6">Blog com React e Laravel</h1>
+      <hr className="mb-6" />
       {selectedPost ? (
         <PostDetail
           post={selectedPost}
@@ -185,28 +187,32 @@ function App() {
       ) : (
         <>
           {!token ? (
+            <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
             <LoginForm onLoginSuccess={handleLoginSuccess} />
+            </div>
           ) : (
-            <div className="card">
+            <div className="bg-card text-card-foreground p-4 rounded-lg shadow-md mb-6 flex justify-between items-center">
               <p>
                 <strong>Login efetuado com sucesso!</strong>
               </p>
-              <button type="button" onClick={fetchPosts}>
+              <div className="flex gap-2">
+              <Button type="button" onClick={fetchPosts}>
                 Buscar Posts
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleLogout}
                 className="button-danger"
               >
                 Sair (Logout)
-              </button>
+              </Button>
+              </div>
             </div>
           )}
-          {error && <p className="error-message">{error}</p>}
+          {error && <p className="text-destructive bg-destructive/10 p-3 rounded-md mt-4 text-center">{error}</p>}
           {token && (
             <>
-              <hr />
+              <hr className="my-6" />
               {editingPost ? (
                 <EditPostForm
                   editingPost={editingPost}
