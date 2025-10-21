@@ -18,14 +18,14 @@ class PostFactory extends Factory
      */
     public function definition(): array
     {
-        $thumb = fake()->image('public/images/posts', 640, 480);
+       // $thumb = fake()->image('public/images/posts', 640, 480);
         $title = fake()->sentence(3);
         return [
             'title' => $title,
             'slug' => Str::slug($title),
-            'user_id' => User::pluck('id')->random(),
+            'user_id' => User::factory(),
             'content' => fake()->paragraph(),
-            'thumb' => str_replace('public/', '', $thumb),
+            'thumb' => null, //str_replace('public/', '', $thumb),
         ];
     }
 }

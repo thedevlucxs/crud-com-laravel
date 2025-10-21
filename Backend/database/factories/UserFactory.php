@@ -23,12 +23,12 @@ class UserFactory extends Factory
      */
     public function definition(): array //retorna um array com as informações
     {
-        $thumb = fake()->image('public/images/users', 640, 480);
+        //$thumb = fake()->image('public/images/users', 640, 480);
         return [
             'firstName' => fake()->firstName(),
             'lastName' => fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
-            'thumb' => str_replace('public/', '', $thumb),
+            'thumb' => null, //str_replace('public/', '', $thumb),
             'password' => '123',
         ];
     }
