@@ -72,8 +72,8 @@ function App() {
   const fetchPosts = async () => {
     setError("");
     try {
-      const response = await apiFetchPosts();
-      setPosts(response.data);
+      const response = await apiFetchPosts(); console.log(response.data.data);
+      setPosts(response.data.data);
       setSelectedPost(null);
     } catch (err) {
       setError("Failed to fetch posts. Maybe your token has expired.");
@@ -196,7 +196,7 @@ function App() {
                 <strong>Login efetuado com sucesso!</strong>
               </p>
               <div className="flex gap-2">
-              <Button type="button" onClick={fetchPosts}>
+              <Button variant="outline" size="icon" aria-label="submit" onClick={fetchPosts} className="border-black hover:bg-accent hover:text-accent-foreground">
                 Buscar Posts
               </Button>
               <Button
