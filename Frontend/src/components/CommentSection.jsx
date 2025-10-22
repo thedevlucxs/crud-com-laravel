@@ -1,4 +1,7 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 function CommentSection({
   comments,
@@ -11,11 +14,11 @@ function CommentSection({
     <div className="comments-section">
       <h3>Comentários</h3>
       {comments && comments.length > 0 ? (
-        <ul className="comments-list">
+        <ul className="space-y-4">
           {comments.map((comment) => (
-            <li key={comment.id} className="comment-item">
-              <p>
-                <strong>{comment.user.firstName}:</strong> {comment.comment}
+            <li key={comment.id} className="comment-item border-b pb-4">
+              <p className="text-sm">
+                <strong className="font-medium">{comment.user.firstName}:</strong> {comment.comment}
               </p>
             </li>
           ))}
@@ -26,17 +29,18 @@ function CommentSection({
 
       {/* Formulário para adicionar novo comentário */}
       {token && (
-        <form onSubmit={handleCreateComment} style={{ marginTop: "20px" }}>
-          <div className="form-group">
+        <form onSubmit={handleCreateComment} className="mt-6 space-y-4">
+          <div className="grid w-full gap-1.5">
+            <Label htmlFor="comment">Seu comentário</Label>
             <textarea
+              id="comment"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Escreva seu comentário..."
               required
-              style={{ width: "100%", minHeight: "80px" }}
             />
           </div>
-          <button type="submit">Comentar</button>
+          <Button type="submit">Comentar</Button>
         </form>
       )}
     </div>
