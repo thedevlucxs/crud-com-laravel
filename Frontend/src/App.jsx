@@ -196,7 +196,7 @@ function App() {
                 <strong>Login efetuado com sucesso!</strong>
               </p>
               <div className="flex gap-2">
-              <Button variant="outline" aria-label="submit" onClick={fetchPosts} >
+              <Button aria-label="submit" onClick={fetchPosts} >
                 Buscar Posts
               </Button>
               <Button
