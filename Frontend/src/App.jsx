@@ -196,13 +196,13 @@ function App() {
                 <strong>Login efetuado com sucesso!</strong>
               </p>
               <div className="flex gap-2">
-              <Button variant="outline" size="icon" aria-label="submit" onClick={fetchPosts} className="border-black hover:bg-accent hover:text-accent-foreground">
+              <Button variant="outline" aria-label="submit" onClick={fetchPosts} >
                 Buscar Posts
               </Button>
               <Button
                 type="button"
                 onClick={handleLogout}
-                className="button-danger"
+                variant="destructive"
               >
                 Sair (Logout)
               </Button>
