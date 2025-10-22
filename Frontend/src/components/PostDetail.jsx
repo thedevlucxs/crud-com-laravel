@@ -23,7 +23,7 @@ function PostDetail({
   return (
     <Card className="w-full max-w-3xl mx-auto">
         <CardHeader className="flex flex-row items-center justify-between border-b pb-4 mb-4">
-          <Button variant="outline" onClick={handleBackToList}>&larr; Voltar para todos os posts</Button>
+          <Button onClick={handleBackToList}>&larr; Voltar para todos os posts</Button>
           {token && authUser && authUser.id === post.user.id && (
             <Button variant="secondary" onClick={() => handleEditPost(post)}>Editar Post</Button>
           )}
