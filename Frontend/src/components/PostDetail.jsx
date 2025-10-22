@@ -31,9 +31,9 @@ function PostDetail({
         <CardContent>
         <CardTitle className="mb-2 text-2xl">{post.title}</CardTitle>
         <CardDescription className="mb-4">Por: {post.user.firstName} {post.user.lastName}</CardDescription>
-       <div className="prose prose-sm md:prose-base max-w-none"><p>{post.content}</p></div>
+       <div className="prose prose-sm md:prose-base"><p>{post.content}</p></div>
         </CardContent>
-        <CardFooter className="flex-col items-start pt-6">
+        <CardFooter className="flex-col w-full pt-6 px-0">
            <CommentSection
           comments={post.comments}
           token={token}

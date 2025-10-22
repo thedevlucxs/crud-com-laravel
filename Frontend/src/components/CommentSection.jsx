@@ -11,13 +11,13 @@ function CommentSection({
   setNewComment,
 }) {
   return (
-    <div className="comments-section">
+    <div className="comments-section w-full px-4">
       <h3>Comentários</h3>
       {comments && comments.length > 0 ? (
         <ul className="space-y-4">
           {comments.map((comment) => (
-            <li key={comment.id} className="comment-item border-b pb-4">
-              <p className="text-sm">
+            <li key={comment.id} className="comment-item border-b pb-4 overflow-hidden">
+              <p className="text-sm break-words">
                 <strong className="font-medium">{comment.user.firstName}:</strong> {comment.comment}
               </p>
             </li>
@@ -32,7 +32,7 @@ function CommentSection({
         <form onSubmit={handleCreateComment} className="mt-6 space-y-4">
           <div className="grid w-full gap-1.5">
             <Label htmlFor="comment">Seu comentário</Label>
-            <textarea
+            <Textarea
               id="comment"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
