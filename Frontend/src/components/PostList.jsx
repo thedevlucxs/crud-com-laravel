@@ -26,7 +26,7 @@ function PostList({
             <Card key={post.id}>
               <CardHeader>
                 <CardTitle>{post.title}</CardTitle>
-                <CardDescription>Por: {post.user.name}</CardDescription>
+                <CardDescription>Por: {post.user.firstName}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground line-clamp-3">
