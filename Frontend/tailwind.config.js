@@ -88,5 +88,8 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")], // Necessário para animações do shadcn/ui
+  plugins: [
+	require("tailwindcss-animate"),
+	require('@tailwindcss/typography'),
+  ], // Necessário para animações do shadcn/ui
 }

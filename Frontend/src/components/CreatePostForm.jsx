@@ -20,7 +20,7 @@ function CreatePostForm({
 }) {
   return (
     <Card className="w-full max-w-lg mx-auto">
-    <form onSubmit={handleCreatePost} className="card">
+    <form onSubmit={handleCreatePost}>
       <CardHeader>
         <CardTitle>Novo Post</CardTitle>     
         </CardHeader>
