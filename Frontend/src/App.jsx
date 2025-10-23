@@ -17,7 +17,8 @@ import CreatePostForm from "./components/CreatePostForm";
 import EditPostForm from "./components/EditPostForm";
 import "./App.css";
 
-import {Button} from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
@@ -170,8 +171,30 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-5x1">
-      <h1 className="text-3x1 font-bold text-center mb-6">Blog com React e Laravel</h1>
+    <div className="container mx-auto p-4 max-w-5xl">
+    <header>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold">Blog com React e Laravel</h1>
+        <div className="flex items-center gap-4">
+          <p>
+            <strong>Bem vindo!</strong>
+          </p>
+          <div className="flex gap-2">
+            <Button aria-label="submit" onClick={fetchPosts} >
+              Buscar Posts
+            </Button>
+            <Button
+              type="button"
+              onClick={handleLogout}
+              variant="destructive"
+              >
+              Sair (Logout)
+            </Button>
+          </div>
+        </div>
+      </div>  
+      <Separator className="mb-6" />
+    </header>
       {selectedPost ? (
         <PostDetail
           post={selectedPost}
@@ -185,32 +208,16 @@ function App() {
         />
       ) : (
         <>
-          {!token ? (
+          {!token && (
             <div className="flex items-center justify-center">
             <LoginForm onLoginSuccess={handleLoginSuccess} />
             </div>
-          ) : (
-            <div className="text-card-foreground p-4 rounded-lg mb-6 flex justify-between items-center">
-              <p>
-                <strong>Bem vindo!</strong>
-              </p>
-              <div className="flex gap-2">
-              <Button aria-label="submit" onClick={fetchPosts} >
-                Buscar Posts
-              </Button>
-              <Button
-                type="button"
-                onClick={handleLogout}
-                variant="destructive"
-              >
-                Sair (Logout)
-              </Button>
-              </div>
-            </div>
           )}
+
           {error && <p className="text-destructive bg-destructive/10 p-3 rounded-md mt-4 text-center">{error}</p>}
           {token && (
             <>
+              <hr className="my-6" />
               {editingPost ? (
                 <EditPostForm
                   editingPost={editingPost}
