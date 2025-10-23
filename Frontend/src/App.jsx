@@ -172,6 +172,7 @@ function App() {
   return (
     <div className="container mx-auto p-4 max-w-5x1">
       <h1 className="text-3x1 font-bold text-center mb-6">Blog com React e Laravel</h1>
+      <hr className="mb-6" />
       {selectedPost ? (
         <PostDetail
           post={selectedPost}
@@ -186,13 +187,13 @@ function App() {
       ) : (
         <>
           {!token ? (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
             <LoginForm onLoginSuccess={handleLoginSuccess} />
             </div>
           ) : (
-            <div className="text-card-foreground p-4 rounded-lg mb-6 flex justify-between items-center">
+            <div className="bg-card text-card-foreground p-4 rounded-lg shadow-md mb-6 flex justify-between items-center">
               <p>
-                <strong>Bem vindo!</strong>
+                <strong>Login efetuado com sucesso!</strong>
               </p>
               <div className="flex gap-2">
               <Button aria-label="submit" onClick={fetchPosts} >
@@ -211,6 +212,7 @@ function App() {
           {error && <p className="text-destructive bg-destructive/10 p-3 rounded-md mt-4 text-center">{error}</p>}
           {token && (
             <>
+              <hr className="my-6" />
               {editingPost ? (
                 <EditPostForm
                   editingPost={editingPost}
