@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Posts
     Route::post('/posts', [PostController::class, 'store']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
-    Route::delete('/posts/{id}', [PostController::class, 'destroy']);
+    Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
     // Comments
     Route::post('/comments', [CommentController::class, 'store']);

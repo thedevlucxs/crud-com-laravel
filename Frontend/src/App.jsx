@@ -158,11 +158,10 @@ function App() {
   };
 
   const handleDeletePost = async (postId) => {
-    setError("");
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
       await apiDeletePost(postId);
       setPosts(posts.filter((post) => post.id !== postId));
+      setSelectedPost(null);
     } catch (err) {
       setError("Failed to delete post.");
       console.error("Delete post error:", err);

@@ -16,6 +16,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {   
+        Log::info("Authorizing update: User ID {$user->id}, Post User ID {$post->user_id}");
         return $user->id === $post->user_id;
     }
 
@@ -24,6 +25,7 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
+        Log::info("Authorizing delete: User ID {$user->id}, Post User ID {$post->user_id}");
         return $user->id === $post->user_id;
     }
 }
