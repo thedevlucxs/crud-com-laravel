@@ -1,5 +1,14 @@
 # Blog com API Laravel e Frontend React + shadcn/ui
 
+![Status](https://img.shields.io/badge/status-conclu%C3%ADdo-green)
+![PHP](https://img.shields.io/badge/PHP-^8.2-blue)
+![Laravel](https://img.shields.io/badge/Laravel-^12.0-orange)
+![React](https://img.shields.io/badge/React-^19.1.1-blue)
+![Vite](https://img.shields.io/badge/Vite-^7.1.7-purple)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-^3.4.17-cyan)
+![shadcn/ui](https://img.shields.io/badge/shadcn/ui-utilizado-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 Este é um projeto de estudo que implementa um sistema de blog completo, construído com uma arquitetura desacoplada: um backend robusto em Laravel que serve uma API RESTful e um frontend moderno e reativo em React, utilizando componentes **shadcn/ui** para a interface.
 
 ## 🎯 Propósito do Projeto
