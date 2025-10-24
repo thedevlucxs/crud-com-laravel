@@ -1,82 +1,122 @@
 # API de Blog com Laravel 12
 
-Este é um projeto de estudo para a criação de uma API RESTful utilizando o framework PHP Laravel na sua versão 12. A aplicação consiste no backend de um sistema simples de blog, responsável por gerenciar usuários, posts e comentários.
+Este é o backend (API) do projeto de blog. Ele é construído em Laravel 12 e usa o Sanctum para autenticação.
 
-## 🎯 Propósito do Projeto
+A API é responsável por gerenciar usuários, posts e comentários, fornecendo endpoints RESTful para o frontend consumir.
 
-O principal objetivo deste projeto é educacional, servindo como um caso prático para aprender e aplicar conceitos de desenvolvimento de API, incluindo:
+## 🛠️ Tecnologias
 
--   Criação de endpoints RESTful seguindo as melhores práticas.
--   Autenticação de SPA (Single Page Application) via token usando Laravel Sanctum.
--   Operações de CRUD (Create, Read, Update, Delete) através de rotas de API.
--   Estruturação de Controllers, Models, Factories e Seeders.
+* PHP 8.2+
+* Laravel 12
+* Laravel Sanctum (para autenticação de API)
+* mySQL (padrão, fácil de configurar para MariaDB/PostgreSQL)
+* Eloquent ORM
+* Separação de lógica em *Services* (ex: `PostService`, `CommentService`)
+* Autorização com *Policies* (ex: `PostPolicy`)
 
-## Funcionalidades da API
+## 🚀 Como Executar
 
--   **Autenticação**: Sistema de login via token e proteção de rotas.
--   **CRUD de Posts**: Endpoints para criar, listar, ver, atualizar e deletar posts.
--   **CRUD de Comentários**: Endpoints para criar, listar, ver, atualizar e deletar comentários.
--   **Povoamento de Dados**: Utiliza Seeders e Factories para gerar dados falsos (usuários, posts, comentários), facilitando o teste e desenvolvimento.
+Siga os passos abaixo para rodar a API localmente.
 
-## Tecnologias Utilizadas
-
--   **Backend**: PHP 8.2, Laravel 12
--   **Autenticação**: Laravel Sanctum
--   **Banco de Dados**: SQLite, MySQL, MariaDB (configurável)
--   **Gerenciador de Dependências**: Composer
-
-## Pré-requisitos
-
--   [PHP 8.2 ou superior](https://www.php.net/)
--   [Composer](https://getcomposer.org/)
--   Um ambiente de desenvolvimento com servidor de banco de dados (Ex: XAMPP, Laragon, etc.).
-
-## Instalação e Execução
-
-1.  **Clone o repositório e acesse a pasta do backend:**
-
+1.  **Acesse a pasta:**
     ```bash
-    git clone [https://github.com/thedevlucxs/crud-com-laravel.git](https://github.com/thedevlucxs/crud-com-laravel.git)
-    cd crud-com-laravel/Backend
+    cd Backend
     ```
 
-2.  **Instale as dependências do Composer:**
-
+2.  **Instale as dependências:**
     ```bash
     composer install
     ```
+   
 
-3.  **Configure o arquivo de ambiente:**
-
-    -   Copie o arquivo de exemplo: `cp .env.example .env`
-    -   Abra o arquivo `.env` e configure as variáveis do banco de dados (`DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`).
+3.  **Configure o ambiente:**
+    * Copie o arquivo de exemplo:
+        ```bash
+        cp .env.example .env
+        ```
+       
+    * (Opcional) Edite o `.env` se não for usar o SQLite padrão.
 
 4.  **Gere a chave da aplicação:**
-
     ```bash
     php artisan key:generate
     ```
+   
 
-5.  **Execute as migrações e popule o banco:**
-
-    -   Este comando cria as tabelas e adiciona dados de teste.
-
+5.  **Crie o banco e popule com dados de teste:**
+    * Este comando cria as tabelas e adiciona dados de teste (usuários, posts, comentários).
     ```bash
     php artisan migrate:fresh --seed
     ```
+   
 
-    -   Um usuário de teste será criado com as credenciais:
-        -   **Email**: `lucas@gmail.com`
-        -   **Senha**: `123456`
-
-6.  **Crie o link simbólico para o storage (para as imagens):**
-
-    ```bash
-    php artisan storage:link
-    ```
-
-7.  **Inicie o servidor de desenvolvimento:**
+6.  **Inicie o servidor:**
     ```bash
     php artisan serve
     ```
-    A API estará disponível em `http://127.0.0.1:8000`.
+   
+
+A API estará disponível em `http://127.0.0.1:8000`.
+
+## 👤 Usuário de Teste
+
+O comando `migrate:fresh --seed` cria um usuário padrão para testes:
+
+* **Email**: `lucas@gmail.com`
+* **Senha**: `123456`
+
+---
+
+## ℹ️ Detalhes Adicionais (Para Consulta)
+
+<details>
+<summary><strong>🔌 Ver Endpoints da API</strong></summary>
+
+Abaixo estão os endpoints principais (prefixo `/api`):
+
+### Autenticação
+* `POST /login`: Autentica (`email`, `password`) e retorna um token Sanctum.
+* `POST /logout`: Invalida o token atual (requer autenticação).
+* `GET /user`: Retorna dados do usuário autenticado (requer autenticação).
+
+### Posts
+* `GET /posts`: Lista todos os posts com dados do autor.
+* `POST /posts`: Cria um novo post (requer autenticação).
+* `GET /posts/{id}`: Exibe um post específico com autor e comentários.
+* `PUT /posts/{id}`: Atualiza um post (requer autenticação e ser o dono).
+* `DELETE /posts/{post}`: Deleta um post (requer autenticação e ser o dono).
+
+### Comentários
+* `GET /comments`: Lista todos os comentários.
+* `POST /comments`: Cria um novo comentário (requer autenticação).
+* `GET /comments/{id}`: Exibe um comentário específico.
+* `PUT /comments/{id}`: Atualiza um comentário (requer autenticação).
+* `DELETE /comments/{id}`: Deleta um comentário (requer autenticação).
+
+*(Nota: Rotas que requerem autenticação esperam um token Sanctum válido no header `Authorization: Bearer <token>`)*
+</details>
+
+<details>
+<summary><strong>🔑 Ver Fluxo de Autenticação (Sanctum)</strong></summary>
+
+1.  O frontend envia `email` e `senha` para `POST /api/login`.
+2.  A API valida e, se correto, retorna um Token de Acesso (Bearer Token).
+3.  O frontend armazena este token (ex: `localStorage`).
+4.  Para rotas protegidas (como `POST /posts`), o frontend envia o token no cabeçalho `Authorization: Bearer <token>`.
+5.  O middleware `auth:sanctum` no Laravel valida o token para autenticar o usuário.
+6.  O `POST /api/logout` (enviado com o token) invalida o token no banco de dados.
+</details>
+
+<details>
+<summary><strong>🏗️ Ver Estrutura de Pastas (Principais)</strong></summary>
+
+* **`app/Http/Controllers`**: Controlam o fluxo das requisições (ex: `PostController`).
+* **`app/Http/Requests`**: Classes de validação (ex: `StorePostRequest`).
+* **`app/Http/Resources`**: Formatam as respostas JSON (ex: `PostResource`).
+* **`app/Models`**: Modelos Eloquent (`User`, `Post`, `Comment`).
+* **`app/Policies`**: Regras de autorização (ex: `PostPolicy` verifica se o usuário é o dono).
+* **`app/Services`**: Onde a lógica de negócio principal reside (ex: `PostService`).
+* **`database/migrations`**: Definição da estrutura das tabelas do banco.
+* **`database/seeders`**: Arquivos para popular o banco com dados de teste.
+* **`routes/api.php`**: Onde todos os endpoints da API são definidos.
+</details>
