@@ -15,6 +15,7 @@ function PostDetail({
   authUser,
   token,
   handleEditPost,
+  handleDeletePost,
   handleCreateComment,
   handleBackToList,
   newComment,
@@ -26,6 +27,9 @@ function PostDetail({
           <Button onClick={handleBackToList}>&larr; Voltar para todos os posts</Button>
           {token && authUser && authUser.id === post.user.id && (
             <Button variant="secondary" onClick={() => handleEditPost(post)}>Editar Post</Button>
+          )}
+          {token && authUser && post.user && authUser.id === post.user.id && (
+            <Button variant="destructive" onClick={() => handleDeletePost(post.id)}>Deletar Post</Button>
           )}
         </CardHeader>
         <CardContent>

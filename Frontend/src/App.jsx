@@ -179,6 +179,7 @@ function App() {
           authUser={authUser}
           token={token}
           handleEditPost={handleEditPost}
+          handleDeletePost={handleDeletePost}
           handleCreateComment={handleCreateComment}
           handleBackToList={() => setSelectedPost(null)}
           newComment={newComment}

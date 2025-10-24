@@ -16,7 +16,6 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {   
-        Log::info('Verificando update policy: User ID=' . $user->id . ', Post User ID=' . $post->user_id);
         return $user->id === $post->user_id;
     }
 
