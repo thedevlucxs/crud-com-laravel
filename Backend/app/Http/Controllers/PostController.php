@@ -35,8 +35,13 @@ class PostController extends Controller
         return response()->json($post);
     }
 
-    public function update(Request $request, Post $post)
+    public function update(Request $request, string $id) 
     {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json(['message' => 'Post not found'], 404);
+        }
+
         $this->authorize('update', $post);
 
         $validatedData = $request->validate([
@@ -44,14 +49,11 @@ class PostController extends Controller
             'content' => 'sometimes|string',
         ]);
 
-        if ($request->has('title')) {
-            $validatedData['slug'] = Str::slug($validatedData['title']);
-        }
+        $updatedPost = $this->postService->updatePost($post, $validatedData);
 
-        $post->update($validatedData);
-        return response()->json($post);
+        return new PostResource($updatedPost);
     }
-
+    
     /**
      * Remove the specified resource from storage.
      */

@@ -23,7 +23,7 @@ class PostFactory extends Factory
         return [
             'title' => $title,
             'slug' => Str::slug($title),
-            'user_id' => User::factory(),
+            'user_id' => User::pluck('id')->random(),
             'content' => fake()->paragraph(),
             'thumb' => null, //str_replace('public/', '', $thumb),
         ];

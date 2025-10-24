@@ -102,7 +102,7 @@ function App() {
         content: newPostContent,
         user_id: authUser.id,
       });
-      setPosts([...posts, response.data]);
+      setPosts([...posts, response.data.data]);
       setNewPostTitle("");
       setNewPostContent("");
     } catch (err) {
@@ -148,7 +148,7 @@ function App() {
         content: editingPost.content,
       });
       setPosts(
-        posts.map((post) => (post.id === editingPost.id ? response.data : post))
+        posts.map((post) => (post.id === editingPost.id ? response.data.data : post))
       );
       setEditingPost(null);
     } catch (err) {
